@@ -11,20 +11,14 @@
 const ITEM_TYPES = {
     coupon: {
         storageKey: 'tokencost_coupons',
-        formSelector: 'form',
         containerSelector: '#couponsContainer',
         clearBtnSelector: '#clearAllBtn',
-        cardClass: 'coupon_card',
-        borderColor: 'blue',
         editFn: null  // Will be assigned in setupItemType
     },
     purchase: {
         storageKey: 'tokencost_purchases',
-        formSelector: 'form',
         containerSelector: '#purchasesContainer',
         clearBtnSelector: '#clearAllPurchasesBtn',
-        cardClass: 'purchase_card',
-        borderColor: 'green',
         editFn: null  // Will be assigned in setupItemType
     }
 };
@@ -121,6 +115,22 @@ function handleAddItem(type, collectFn, clearFn) {
  */
 function getTypeLabel(type) {
     return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function generateItemId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 function handleClearAllItems(type) {
@@ -301,7 +311,7 @@ function collectCouponData() {
     }
 
     return {
-        id: Date.now(),
+        id: generateItemId(),
         mode: mode,
         discountAmount: discountNum,
         discountCap: document.getElementById('couponLimit_toggle').checked
@@ -323,7 +333,13 @@ function collectCouponData() {
  * Clear coupon form to initial state
  */
 function clearForm() {
-    document.querySelector('form').reset();
+    document.getElementById('mode_percent').checked = true;
+    document.getElementById('couponAmount').value = '';
+    document.getElementById('couponLimit').value = '';
+    document.getElementById('couponRequirement').value = '';
+    document.getElementById('minimumSpend').value = '';
+    document.getElementById('req_type_original').checked = true;
+
     document.getElementById('couponLimit_toggle').checked = false;
     document.getElementById('couponRequirement_toggle').checked = false;
     document.getElementById('minimumSpend_toggle').checked = false;
@@ -452,7 +468,7 @@ function collectPurchaseData() {
     }
 
     return {
-        id: Date.now(),
+        id: generateItemId(),
         price: priceNum,
         description: description || '',
         tokens: tokensNum,
@@ -491,11 +507,13 @@ function handleEditPurchase(purchase) {
  * Create HTML for a purchase card
  */
 function createPurchaseCard(purchase) {
+    const safeDescription = escapeHtml(purchase.description);
+
     return `
         <div class="item_card item_card--purchase">
             <div class="item_card_content">
                 <div class="item_card_header">
-                    ${purchase.description ? `${purchase.description} - ` : ''}HKD ${purchase.price}
+                    ${safeDescription ? `${safeDescription} - ` : ''}HKD ${purchase.price}
                 </div>
                 <div class="item_card_detail"><strong>Total Reward:</strong> ${purchase.totalReward} tokens</div>
                 ${purchase.tokens > 0 ? `<div class="item_card_detail"><strong>Tokens:</strong> ${purchase.tokens}</div>` : ''}
@@ -515,11 +533,18 @@ function createPurchaseCard(purchase) {
  */
 function duplicateItem(type, itemId) {
     const items = getItems(type);
+    const maxItems = 10;
+    if (items.length >= maxItems) {
+        const itemName = getTypeLabel(type);
+        alert(`Maximum of ${maxItems} ${itemName}s allowed. Please delete some before duplicating more.`);
+        return;
+    }
+
     const item = items.find(i => i.id === itemId);
     if (!item) return;
 
     const duplicated = JSON.parse(JSON.stringify(item));
-    duplicated.id = Date.now();
+    duplicated.id = generateItemId();
     items.push(duplicated);
     saveItems(type, items);
     displayItems(type);
@@ -700,12 +725,13 @@ function calculateCombination(purchase, coupon) {
         
         if (!spendCheckPassed) {
             // Coupon cannot be applied
+            const tokensPerHKD = finalPrice > 0 ? purchase.totalReward / finalPrice : null;
             return {
                 purchase: purchase,
                 coupon: coupon,
                 finalPrice: finalPrice,
                 discountAmount: 0,
-                tokensPerHKD: purchase.totalReward / finalPrice,
+                tokensPerHKD: tokensPerHKD,
                 applicable: false
             };
         }
@@ -719,23 +745,23 @@ function calculateCombination(purchase, coupon) {
             finalPrice = coupon.storeMinimumCharge;
             discountAmount = purchase.price - finalPrice;
         }
+
+        // Prevent impossible negative totals when fixed discount exceeds price.
+        if (finalPrice < 0) {
+            finalPrice = 0;
+            discountAmount = purchase.price;
+        }
     }
-    
+
+    const tokensPerHKD = finalPrice > 0 ? purchase.totalReward / finalPrice : null;
     return {
         purchase: purchase,
         coupon: coupon,
         finalPrice: finalPrice,
         discountAmount: discountAmount,
-        tokensPerHKD: purchase.totalReward / finalPrice,
+        tokensPerHKD: tokensPerHKD,
         applicable: true
     };
-}
-
-/**
- * A sort function is no longer needed once output is input-order; kept for backward compatibility.
- */
-function sortCombinationsByValue(combinations) {
-    return combinations; // no-op
 }
 
 /**
@@ -751,7 +777,7 @@ function displayResults(combinations) {
         return;
     }
     
-    resultsList.innerHTML = combinations.map((combo, index) => createResultCard(combo, index)).join('');
+    resultsList.innerHTML = combinations.map(combo => createResultCard(combo)).join('');
 
     const finalPrice = combinations.reduce((sum, combo) => sum + combo.finalPrice, 0);
     resultsTotal.textContent = `Final Price: HKD ${finalPrice.toFixed(2)}`;
@@ -762,13 +788,15 @@ function displayResults(combinations) {
 /**
  * Create HTML for a result card
  */
-function createResultCard(combo, index) {
+function createResultCard(combo) {
     const purchaseLabel = combo.purchase.description
-        ? combo.purchase.description
+        ? escapeHtml(combo.purchase.description)
         : `${Math.round(combo.purchase.totalReward)} Pack`;
     const couponDesc = combo.coupon ? 
         `${combo.coupon.discountAmount}${combo.coupon.mode === 'percent' ? '%' : ' HKD'} OFF${combo.coupon.discountCap ? ` (max ${combo.coupon.discountCap} HKD)` : ''}` : 
         'No Coupon';
+    const tokensPerHKDText = combo.tokensPerHKD === null ? 'N/A (free)' : combo.tokensPerHKD.toFixed(4);
+    const freeBadge = combo.finalPrice === 0 ? '<span class="free_badge">FREE PURCHASE</span>' : '';
     
     const applicableText = combo.applicable ? '' : ' (Not Applicable)';
     
@@ -776,12 +804,12 @@ function createResultCard(combo, index) {
         <div class="result_card ${combo.applicable ? '' : 'not-applicable'}">
             <div class="result_content">
                 <div class="result_header">
-                    <strong>${purchaseLabel}</strong> + ${couponDesc}${applicableText}
+                    <strong>${purchaseLabel}</strong> + ${couponDesc}${applicableText} ${freeBadge}
                 </div>
                 <div class="result_details">
                     <div><span>Final Price:</span> <span>HKD ${combo.finalPrice.toFixed(2)}</span></div>
                     <div><span>Discount:</span> <span>HKD ${combo.discountAmount.toFixed(2)}</span></div>
-                    <div><span>Tokens per HKD:</span> <span>${(combo.tokensPerHKD).toFixed(4)}</span></div>
+                    <div><span>Tokens per HKD:</span> <span>${tokensPerHKDText}</span></div>
                 </div>
             </div>
         </div>

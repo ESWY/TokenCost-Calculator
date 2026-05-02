@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Calculator 2</title>
+    <link rel="stylesheet" href="tokencost_style.css">
+</head>
+<body>
+    <div class="main_container">
+        <form class="input_container">
+            <fieldset class="input_coupon">
+                <legend>Coupon Details</legend>
+
+                <div class="form_group">
+                    <label>Discount Type: <span class="required">*</span></label>
+                    <div class="toggle_group">
+                        <input type="radio" id="mode_percent" name="coupon_mode" value="percent" checked>
+                        <label for="mode_percent">% OFF</label>
+                        <input type="radio" id="mode_hkd" name="coupon_mode" value="hkd">
+                        <label for="mode_hkd">HKD OFF</label>
+                    </div>
+                </div>
+
+                <div class="form_group">
+                    <label for="couponAmount">
+                        <span id="couponAmount_label">Discount (% off):</span>
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number" id="couponAmount" placeholder="Discount percentage" min="1" max="100" step="1" required>
+                </div>
+
+                <div class="form_group">
+                    <label>
+                        <input type="checkbox" id="couponLimit_toggle">
+                        Discount has a maximum cap
+                    </label>
+                    <div class="nested_group" id="couponLimit_group">
+                        <label for="couponLimit">Discount Cap (HKD):</label>
+                        <input type="number" id="couponLimit" placeholder="Maximum discount allowed" min="1" step="1">
+                    </div>
+                </div>
+
+                <div class="form_group">
+                    <label>
+                        <input type="checkbox" id="couponRequirement_toggle">
+                        Coupon has a minimum spend requirement
+                    </label>
+                    <div class="nested_group" id="couponRequirement_type">
+                        <label>Requirement Type:</label>
+                        <div class="toggle_group toggle_group--nested">
+                            <input type="radio" id="req_type_original" name="requirement_type" value="original" checked>
+                            <label for="req_type_original">Original Price</label>
+                            <input type="radio" id="req_type_final" name="requirement_type" value="final">
+                            <label for="req_type_final">Final Price</label>
+                        </div>
+                        <label for="couponRequirement">Minimum Spend (HKD):</label>
+                        <input type="number" id="couponRequirement" placeholder="Minimum to qualify for coupon" min="1" step="1">
+                    </div>
+                </div>
+
+                <div class="form_group">
+                    <label>
+                        <input type="checkbox" id="minimumSpend_toggle">
+                        Store has a minimum charge
+                    </label>
+                    <div class="nested_group" id="minimumSpend_group">
+                        <label for="minimumSpend">Minimum Charge (HKD):</label>
+                        <input type="number" id="minimumSpend" placeholder="Lowest possible charge" min="1" step="1">
+                    </div>
+                </div>
+
+                <button type="button" class="submit_button" id="addCouponBtn">Add Coupon</button>
+            </fieldset>
+
+            <fieldset class="input_purchase">
+                <legend>Purchase Reward</legend>
+
+                <div class="form_group">
+                    <label for="purchasePrice">
+                        Price (HKD):
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number" id="purchasePrice" placeholder="Amount paid" min="1" step="1" required>
+                </div>
+
+                <div class="form_group">
+                    <label for="purchaseDescription">
+                        Description:
+                    </label>
+                    <input type="text" id="purchaseDescription" placeholder="e.g., Event Pass, Battle Pass, Starter Pack" maxlength="50">
+                </div>
+
+                <div class="form_group">
+                    <label for="purchaseTokens">
+                        Tokens:
+                    </label>
+                    <input type="number" id="purchaseTokens" placeholder="Tokens received from purchase" min="0" step="1">
+                </div>
+
+                <div class="form_group">
+                    <label for="purchaseOtherResources">
+                        Other Resources (in tokens):
+                    </label>
+                    <input type="number" id="purchaseOtherResources" placeholder="Estimated value of other items" min="0" step="1">
+                </div>
+
+                <div class="total_reward_display">
+                    <div class="total_reward_label">Total Reward Value:</div>
+                    <div class="total_reward_value">
+                        <span id="totalRewardValue">0</span> tokens
+                    </div>
+                </div>
+
+                <button type="button" class="submit_button" id="addPurchaseBtn">Add Purchase</button>
+            </fieldset>
+        </form>
+    </div>
+
+    <div class="main_container">
+        <fieldset class="coupons_display">
+            <legend>Stored Coupons</legend>
+            <div id="couponsContainer" class="coupons_list">
+                <p class="empty_message">No coupons added yet. Add your first coupon to get started!</p>
+            </div>
+            <button type="button" class="clear_all_button" id="clearAllBtn">Clear All</button>
+        </fieldset>
+    </div>
+
+    <div class="main_container">
+        <fieldset class="purchases_display">
+            <legend>Stored Purchases</legend>
+            <div id="purchasesContainer" class="purchases_list">
+                <p class="empty_message">No purchases added yet. Add your first purchase to get started!</p>
+            </div>
+            <button type="button" class="clear_all_button" id="clearAllPurchasesBtn">Clear All</button>
+        </fieldset>
+    </div>
+
+    <div class="main_container">
+        <fieldset class="calculation_section">
+            <legend>Calculate Best Deals</legend>
+            <button type="button" class="calculate_button" id="calculateBtn">Calculate Best Deals</button>
+            <div id="resultsContainer" class="results_container" style="display: none;">
+                <h3>Best Deal Combinations</h3>
+                <div id="resultsList" class="results_list"></div>
+                <div id="resultsTotal" class="results_total"></div>
+            </div>
+        </fieldset>
+    </div>
+
+    <script src="tokencost_script.js"></script>
+</body>
+</html>

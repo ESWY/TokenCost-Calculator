@@ -231,6 +231,7 @@ function setupCheckboxListeners() {
         { checkbox: 'couponLimit_toggle', group: 'couponLimit_group' },
         { checkbox: 'couponRequirement_toggle', group: 'couponRequirement_type' },
         { checkbox: 'minimumSpend_toggle', group: 'minimumSpend_group' },
+        { checkbox: 'purchaseOtherResources_toggle', group: 'purchaseOtherResources_group' },
     ];
 
     conditionalCheckboxes.forEach(({ checkbox, group }) => {
@@ -433,7 +434,10 @@ function setupPurchaseRewardListeners() {
  */
 function updateTotalRewardDisplay() {
     const tokensValue = parseFloat(document.getElementById('purchaseTokens').value) || 0;
-    const otherResourcesValue = parseFloat(document.getElementById('purchaseOtherResources').value) || 0;
+    const hasOtherResources = document.getElementById('purchaseOtherResources_toggle').checked;
+    const otherResourcesValue = hasOtherResources
+        ? (parseFloat(document.getElementById('purchaseOtherResources').value) || 0)
+        : 0;
     const totalReward = tokensValue + otherResourcesValue;
 
     document.getElementById('totalRewardValue').textContent = totalReward;
@@ -446,7 +450,10 @@ function collectPurchaseData() {
     const price = document.getElementById('purchasePrice').value;
     const description = document.getElementById('purchaseDescription').value;
     const tokens = document.getElementById('purchaseTokens').value;
-    const otherResources = document.getElementById('purchaseOtherResources').value;
+    const hasOtherResources = document.getElementById('purchaseOtherResources_toggle').checked;
+    const otherResources = hasOtherResources
+        ? document.getElementById('purchaseOtherResources').value
+        : '';
 
     const priceNum = parseFloat(price) || 0;
     const tokensNum = parseFloat(tokens) || 0;
@@ -485,6 +492,8 @@ function clearPurchaseForm() {
     document.getElementById('purchaseDescription').value = '';
     document.getElementById('purchaseTokens').value = '';
     document.getElementById('purchaseOtherResources').value = '';
+    document.getElementById('purchaseOtherResources_toggle').checked = false;
+    document.getElementById('purchaseOtherResources_group').classList.remove('visible');
     updateTotalRewardDisplay();
 }
 
@@ -495,7 +504,10 @@ function handleEditPurchase(purchase) {
     document.getElementById('purchasePrice').value = purchase.price;
     document.getElementById('purchaseDescription').value = purchase.description;
     document.getElementById('purchaseTokens').value = purchase.tokens;
-    document.getElementById('purchaseOtherResources').value = purchase.otherResources;
+    const hasOtherResources = purchase.otherResources > 0;
+    document.getElementById('purchaseOtherResources_toggle').checked = hasOtherResources;
+    document.getElementById('purchaseOtherResources_group').classList.toggle('visible', hasOtherResources);
+    document.getElementById('purchaseOtherResources').value = hasOtherResources ? purchase.otherResources : '';
 
     updateTotalRewardDisplay();
 

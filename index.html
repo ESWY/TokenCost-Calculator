@@ -99,10 +99,16 @@
                 </div>
 
                 <div class="form_group">
-                    <label for="purchaseOtherResources">
-                        Other Resources (in tokens):
+                    <label>
+                        <input type="checkbox" id="purchaseOtherResources_toggle">
+                        Include Other Resources (in tokens)
                     </label>
-                    <input type="number" id="purchaseOtherResources" placeholder="Estimated value of other items" min="0" step="1">
+                    <div class="nested_group" id="purchaseOtherResources_group">
+                        <label for="purchaseOtherResources">
+                            Other Resources (in tokens):
+                        </label>
+                        <input type="number" id="purchaseOtherResources" placeholder="Estimated value of other items" min="0" step="1">
+                    </div>
                 </div>
 
                 <div class="total_reward_display">

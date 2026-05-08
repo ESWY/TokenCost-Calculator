@@ -91,6 +91,16 @@ body {
     margin-top: auto;
 }
 
+/* Keep purchase reward summary attached to Add Purchase button */
+.input_purchase .total_reward_display {
+    margin-top: auto;
+    margin-bottom: var(--space-md);
+}
+
+.input_purchase .submit_button {
+    margin-top: 0;
+}
+
 /* Fieldsets */
 fieldset {
     border: none;

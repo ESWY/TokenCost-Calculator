@@ -406,7 +406,7 @@ legend {
 
 /* Calculation Section - Distinct */
 .calculation_section {
-    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+    padding: var(--space-sm) var(--space-lg) var(--space-lg);
     background: var(--bg-secondary);
     border: none;
     margin-top: var(--space-lg);

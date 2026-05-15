@@ -38,8 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Purchase reward display listeners
     setupPurchaseRewardListeners();
 
+    // Theme setup
+    setupTheme();
+
     // Calculation setup
     setupCalculation();
+
+    // Dialog setup
+    setupSettingDialog();
 
     // Initial display
     displayItems('coupon');
@@ -845,3 +851,39 @@ function createItemCard(type, item) {
     }
 }
 
+function setupSettingDialog() {
+    const dialog = document.getElementById('setting-modal');
+    if (!dialog) return;
+
+    const wrapper = dialog.querySelector('.wrapper');
+    const openButton = document.getElementById('openSettingsBtn');
+    const closeButton = document.getElementById('closeSettingsBtn');
+    const themeToggle = document.getElementById('themeToggle');
+
+    openButton?.addEventListener('click', () => dialog.showModal());
+    closeButton?.addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('click', (e) => {
+        if (wrapper && !wrapper.contains(e.target)) {
+            dialog.close();
+        }
+    });
+
+    themeToggle?.addEventListener('change', (e) => {
+        const theme = e.target.checked ? 'dark' : 'light';
+        applyTheme(theme);
+    });
+}
+
+function setupTheme() {
+    const savedTheme = localStorage.getItem('tokencost_theme');
+    const defaultTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    applyTheme(savedTheme || defaultTheme);
+}
+
+function applyTheme(theme) {
+    document.body.dataset.theme = theme;
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) themeToggle.checked = theme === 'dark';
+    localStorage.setItem('tokencost_theme', theme);
+}

@@ -157,6 +157,22 @@
             </div>
         </fieldset>
     </div>
+    <button type="button" id="openSettingsBtn" aria-label="Open settings">⚙</button>
+    <dialog id="setting-modal">
+        <div class="wrapper">
+            <button type="button" id="closeSettingsBtn" aria-label="Close settings">×</button>
+            <h3>Settings</h3>
+            <div class="settings_row">
+                <label class="theme_toggle" for="themeToggle">
+                    <span class="theme_toggle__label">Dark mode</span>
+                    <span class="switch">
+                        <input type="checkbox" id="themeToggle" />
+                        <span class="switch__slider"></span>
+                    </span>
+                </label>
+            </div>
+        </div>
+    </dialog>
 
     <script src="tokencost_script.js"></script>
 </body>
